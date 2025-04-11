@@ -1,0 +1,14 @@
+package main
+
+import (
+	"log"
+
+	"github.com/KarolinaLop/dp/web"
+)
+
+func main() {
+	s := web.SetupServer()
+
+	log.Println("Server is running on http://localhost:" + web.PORT)
+	log.Fatal(s.ListenAndServe())
+}
