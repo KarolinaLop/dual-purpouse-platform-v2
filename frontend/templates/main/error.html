@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <link rel="stylesheet" href="/static/assets/css/bootstrap.min.css">
+    <script src="/static/assets/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .error-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .error-code {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #dc3545;
+        }
+
+        .error-message {
+            font-size: 1.25rem;
+            color: #6c757d;
+        }
+
+        .btn-home {
+            background-color: black;
+            color: white;
+        }
+
+        .btn-home:hover {
+            background-color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="error-container">
+        <div class="error-code">{{ .errorCode }}</div>
+        <div class="error-message">{{ .errorMessage }}</div>
+        <a href="/" class="btn btn-home mt-4">Go to Homepage</a>
+    </div>
+</body>
+
+</html>
