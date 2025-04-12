@@ -46,6 +46,8 @@ func SetupServer() *http.Server {
 
 func registerRoutes(r *gin.Engine) {
 	r.GET("/", gin.HandlerFunc(HomeHandler))
+	r.GET("/register", gin.HandlerFunc(ShowRegistrationForm))
+	r.POST("/register", gin.HandlerFunc(RegisterUser))
 }
 
 // ErrorHandler is our error handling Middleware.
