@@ -31,7 +31,7 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
-	// validate the form data
+	// Validate the form data
 	if form.Username == "" || form.Email == "" || form.Password == "" {
 		c.Error(errors.New("All fields are required"))
 		return
@@ -61,14 +61,19 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
-	_, err = data.CreateUser(data.DB, user)
+	user, err = data.CreateUser(data.DB, user)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	// TODO: set a session or cookie here to log the user in
-	c.HTML(http.StatusOK, "main.html", gin.H{"user": user})
+	// Create a session
+	if err = createUserSession(c, user); err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, "/dashboard")
 }
 
 // hashPassword hashes the password using bcrypt.
