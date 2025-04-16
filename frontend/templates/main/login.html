@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Login</title>
+    <link rel="stylesheet" href='/static/assets/css/bootstrap.min.css' />
+    <link rel="stylesheet" href='/static/assets/css/main.css' />
+    <script src='/static/assets/js/bootstrap.bundle.min.js'></script>
+    <script src='/static/assets/js/jquery.min.js'></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .login-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-black {
+            background-color: black;
+            color: white;
+        }
+
+        .btn-black:hover {
+            background-color: #333;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container text-center">
+        <h2 class="text-center mb-4">Login to Your Account</h2>
+        <form action="/login" method="POST">
+            <div class="mb-3 text-start">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+            <div class="mb-3 text-start">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn btn-black w-100">Login</button>
+        </form>
+        <p class="text-center mt-3">
+            Don't have an account? <a href="/register" class="text-black">Register</a>
+        </p>
+    </div>
+
+</body>
+
+</html>
