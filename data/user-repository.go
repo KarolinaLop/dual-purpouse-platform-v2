@@ -2,20 +2,40 @@ package data
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/KarolinaLop/dp/models"
 )
 
-// GetUser retrieves a user by email.
-func GetUser(db *sql.DB, email string) (models.User, error) {
-	query := "SELECT id, name, email, created_at FROM users WHERE email = ?;"
+// ErrUserNotFound is returned when a user is not found in the database.
+var ErrUserNotFound = errors.New("user not found")
+
+// GetUserByEmail retrieves a user by email.
+func GetUserByEmail(db *sql.DB, email string) (models.User, error) {
+	query := "SELECT id, name, email, created_at, password FROM users WHERE email = ?;"
 	row := db.QueryRow(query, email)
 
 	var user models.User
-	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt)
+	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt, &user.PasswordHash)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return models.User{}, nil // No user found
+			return models.User{}, ErrUserNotFound
+		}
+		return models.User{}, err // Some other error occurred
+	}
+	return user, nil
+}
+
+// GetUserByID retrieves a user by ID.
+func GetUserByID(db *sql.DB, ID int) (models.User, error) {
+	query := "SELECT id, name, email, created_at, password FROM users WHERE id = ?;"
+	row := db.QueryRow(query, ID)
+
+	var user models.User
+	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.CreatedAt, &user.PasswordHash)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.User{}, ErrUserNotFound
 		}
 		return models.User{}, err // Some other error occurred
 	}
