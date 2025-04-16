@@ -1,98 +1,91 @@
 package web
 
 import (
-	"net/http"
+	"encoding/json"
+	"encoding/xml"
+	"fmt"
+	"io"
+	"log"
+	"os"
 	"os/exec"
-	"regexp"
-	"strings"
+	"testing"
 
+	"github.com/KarolinaLop/dp/models"
 	"github.com/gin-gonic/gin"
 )
 
-// ScanResult represents the structure of the Nmap scan results.
-type ScanResult struct {
-	Host            string `json:"host"`
-	Ports           string `json:"ports"`
-	Services        string `json:"services"`
-	OS              string `json:"os"`
-	Vulnerabilities string `json:"vulnerabilities"`
-	Status          string `json:"status"`
-}
-
-var currentCmd *exec.Cmd
-
 // StartScanHandler starts an Nmap scan and returns the results.
 func StartScanHandler(c *gin.Context) {
-	// Define the target (default to localhost)
-	target := "127.0.0.1"
 
-	// Run the Nmap scan
-	currentCmd = exec.Command("nmap", "-Pn", "-T4", "-sS", "-sV", "-O", "--script", "vuln", target)
+	// Final Nmap command: sudo nmap -Pn -T4 -sS -sV --open -oX scan-result.xml -F 192.168.1.0/24
+	// TODO: make the address configurable or discoverable by the code
+	target := "192.168.1.0/24" // Temp my network address
+
+	currentCmd := exec.Command(
+		"nmap",            // Run the Nmap scan
+		"-Pn",             // Host discovery, disables ping, treats all hosts as online
+		"-T4",             // Sets timig for faster scans
+		"-sS",             // Stealth SYN scan for open ports
+		"-sV",             // Probes ports for srvices and versions
+		"--open",          // Lists only open ports
+		"-oX",             // Produces XML output
+		"scan-result.xml", // Saves output as XML scan-result.xml file
+		"-F",              // Fast scan, scans only the most popular ports
+		target,
+	)
+
 	output, err := currentCmd.CombinedOutput()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Printf(">>>>>>>>>>>> exit code: %v\n output: %s", err, string(output))
+		c.Error(err)
 		return
 	}
-
-	// Parse the Nmap output (basic parsing for now)
-	result := parseNmapOutput(string(output))
-	result.Status = "Scan completed"
-
-	// Return the results as JSON
-	c.JSON(http.StatusOK, result)
 }
 
-// StopScanHandler stops the currently running Nmap scan.
-func StopScanHandler(c *gin.Context) {
-	if currentCmd != nil && currentCmd.Process != nil {
-		err := currentCmd.Process.Kill()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to stop scan"})
-			return
-		}
-		currentCmd = nil
-		c.JSON(http.StatusOK, gin.H{"message": "Scan stopped"})
-	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No scan is currently running"})
+// TODO: parse the output (chekc Go library) - working on my parser - WIP
+// TODO: store the parsed output as a scanresult in the database
+// data.CreateScan(data.DB)
+// parseNmapXML parses the xml file and stores the information in a ScanResult.
+func ParseNmapXML(filename string) (models.ScanResult, error) {
+
+	// Open xml file
+	xmlFile, err := os.Open(filename)
+	// If os.Open returns error then handle it
+	if err != nil {
+		return models.ScanResult{}, err
 	}
+	defer xmlFile.Close()
+
+	fmt.Println("Sucessfully Opened scan-result.xml")
+
+	// Read the open XML
+	byteValue, err := io.ReadAll(xmlFile)
+	if err != nil {
+		return models.ScanResult{}, fmt.Errorf("parseNmapXML: could not read xml file: %w", err)
+	}
+
+	// Init my ScanResult model
+	var result models.ScanResult
+	if err := xml.Unmarshal(byteValue, &result); err != nil {
+		return models.ScanResult{}, err
+	}
+
+	return result, nil
 }
 
-// parseNmapOutput parses the raw Nmap output into a structured format.
-func parseNmapOutput(output string) ScanResult {
-	var result ScanResult
-
-	// Host
-	hostRegex := regexp.MustCompile(`Nmap scan report for (.+)`)
-	if matches := hostRegex.FindStringSubmatch(output); len(matches) > 1 {
-		result.Host = matches[1]
+func printScanResultsAsJson(_ *testing.T, filename string) {
+	data, err := ParseNmapXML(filename)
+	if err != nil {
+		fmt.Printf("printScanResultAsJson: %s", err)
 	}
 
-	// Ports (all lines with open ports)
-	lines := strings.Split(output, "\n")
-	for _, line := range lines {
-		if matched, _ := regexp.MatchString(`^\d+/tcp\s+open`, line); matched {
-			result.Ports += line + "\n"
-		}
+	jsonData, _ := json.MarshalIndent(data, "", "  ") // do error check
+	if err != nil {
+		fmt.Printf("Couldn't print JSON output: %s", err)
 	}
-
-	// Services (already partially covered)
-	serviceInfo := regexp.MustCompile(`Service Info:\s*(.+)`)
-	if matches := serviceInfo.FindStringSubmatch(output); len(matches) > 1 {
-		result.Services = matches[1]
-	}
-
-	// OS detection
-	osRegex := regexp.MustCompile(`OS details:\s*(.+)`)
-	if matches := osRegex.FindStringSubmatch(output); len(matches) > 1 {
-		result.OS = matches[1]
-	}
-
-	// Vulnerabilities (lines with "VULNERABLE")
-	for _, line := range lines {
-		if strings.Contains(line, "VULNERABLE") {
-			result.Vulnerabilities += line + "\n"
-		}
-	}
-
-	return result
+	fmt.Println(string(jsonData))
 }
+
+// TODO: Nice have
+// list scans -> list of previous scans that user did
+// show scan details -> parse scan output from database and show results to the user

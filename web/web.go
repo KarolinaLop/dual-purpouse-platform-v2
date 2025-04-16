@@ -45,9 +45,13 @@ func SetupServer() *http.Server {
 }
 
 func registerRoutes(r *gin.Engine) {
-	r.GET("/", gin.HandlerFunc(HomeHandler))
-	r.GET("/register", gin.HandlerFunc(ShowRegistrationForm))
-	r.POST("/register", gin.HandlerFunc(RegisterUser))
+	r.GET("/", HomeHandler)
+	r.GET("/register", ShowRegistrationForm)
+	r.POST("/register", RegisterUser)
+
+	// Routes for scanning
+	r.GET("/create-nmap-scan", StartScanHandler)
+
 }
 
 // ErrorHandler is our error handling Middleware.
