@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/xml"
+	"os"
 	"testing"
 
 	"github.com/KarolinaLop/dp/models"
@@ -9,6 +10,16 @@ import (
 )
 
 func TestParseNmapXML(t *testing.T) {
+	// Read the test XML (like your real handler)
+	xmlBytes, err := os.ReadFile("../testdata/scan-result-copy.xml")
+	if err != nil {
+		t.Fatalf("Failed to read test XML file: %v", err)
+	}
+
+	var got models.ScanResult
+	if err := xml.Unmarshal(xmlBytes, &got); err != nil {
+		t.Fatalf("Failed to unmarshal XML: %v", err)
+	}
 
 	// Sets up the correct result of the operation
 	want := models.ScanResult{
@@ -38,21 +49,7 @@ func TestParseNmapXML(t *testing.T) {
 			},
 		},
 	}
-
-	// Calls the function
-	got, err := ParseNmapXML("../testdata/scan-result-copy.xml")
-	if err != nil {
-		t.Fatalf("Could not parse XML: %s", err)
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("Parsed XML does not match expected structure (-want +got):\n%s", diff)
 	}
-
-	// Compares result
-	if !cmp.Equal(want, got) {
-		t.Errorf("parseNampXML() mismatch (-want +got):\n%s", cmp.Diff(want, got))
-	}
-
-	// if diff := cmp.Diff(want, got); diff != "" {
-	// 	t.Errorf("parseNampXML() mismatch (-want +got):\n%s", diff)
-	// }
-
-	printScanResultsAsJson(t, "../testdata/scan-result-copy.xml") // for debugging
 }

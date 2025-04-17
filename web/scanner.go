@@ -3,18 +3,16 @@ package web
 import (
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
-	"io"
 	"log"
 	"os"
 	"os/exec"
-	"testing"
 
+	"github.com/KarolinaLop/dp/data" // Import the data package
 	"github.com/KarolinaLop/dp/models"
 	"github.com/gin-gonic/gin"
 )
 
-// StartScanHandler starts an Nmap scan and returns the results.
+// StartScanHandler runs an Nmap scan, reads the XML output and saves to DB.
 func StartScanHandler(c *gin.Context) {
 
 	// Final Nmap command: sudo nmap -Pn -T4 -sS -sV --open -oX scan-result.xml -F 192.168.1.0/24
@@ -36,54 +34,49 @@ func StartScanHandler(c *gin.Context) {
 
 	output, err := currentCmd.CombinedOutput()
 	if err != nil {
-		log.Printf(">>>>>>>>>>>> exit code: %v\n output: %s", err, string(output))
+		log.Printf("Scan failed: %v\n Output: %s", err, string(output))
 		c.Error(err)
 		return
 	}
+	// file is created
+
+	// Read the XML output from file
+	xmlBytes, err := os.ReadFile("../testdata/scan-result.xml")
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to read scan result"})
+		return
+	}
+
+	// Save to DB, uses a placeholder the "1" for user_id temporarily
+	err = data.StoreNmapScan(data.DB, 1, target, string(xmlBytes))
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to store scan result"})
+		return
+	}
+	c.JSON(200, gin.H{"message": "Scan completed and saved"})
 }
 
-// TODO: parse the output (chekc Go library) - working on my parser - WIP
-// TODO: store the parsed output as a scanresult in the database
-// data.CreateScan(data.DB)
-// parseNmapXML parses the xml file and stores the information in a ScanResult.
-func ParseNmapXML(filename string) (models.ScanResult, error) {
+// Function that retives scan by ID, pasres the XML, and returns it as structured JSON data
+func GetParsedScanResult(c *gin.Context) {
+	scanID := c.Param("id") // GET from route like /scans/:id
 
-	// Open xml file
-	xmlFile, err := os.Open(filename)
-	// If os.Open returns error then handle it
+	// Laod form DB
+	rawXML, err := data.GetNampXMLScanByID(data.DB, scanID)
 	if err != nil {
-		return models.ScanResult{}, err
-	}
-	defer xmlFile.Close()
-
-	fmt.Println("Sucessfully Opened scan-result.xml")
-
-	// Read the open XML
-	byteValue, err := io.ReadAll(xmlFile)
-	if err != nil {
-		return models.ScanResult{}, fmt.Errorf("parseNmapXML: could not read xml file: %w", err)
+		c.JSON(500, gin.H{"error": "Could not load scan result"})
+		return
 	}
 
-	// Init my ScanResult model
+	// Parse into ScanResult struct
 	var result models.ScanResult
-	if err := xml.Unmarshal(byteValue, &result); err != nil {
-		return models.ScanResult{}, err
+	if err := xml.Unmarshal([]byte(rawXML), &result); err != nil {
+		c.JSON(500, gin.H{"error": "Could not load scan result"})
+		return
 	}
 
-	return result, nil
-}
-
-func printScanResultsAsJson(_ *testing.T, filename string) {
-	data, err := ParseNmapXML(filename)
-	if err != nil {
-		fmt.Printf("printScanResultAsJson: %s", err)
-	}
-
-	jsonData, _ := json.MarshalIndent(data, "", "  ") // do error check
-	if err != nil {
-		fmt.Printf("Couldn't print JSON output: %s", err)
-	}
-	fmt.Println(string(jsonData))
+	// Convert to JSON
+	jsonResult, _ := json.MarshalIndent(result, "", " ")
+	c.Data(200, "application/json", jsonResult)
 }
 
 // TODO: Nice have
