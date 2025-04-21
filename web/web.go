@@ -15,8 +15,6 @@ import (
 )
 
 const (
-	assetsDir    = "frontend/assets/"
-	templatesDir = "frontend/templates/**/*.html"
 	// PORT is the port the server will listen on.
 	PORT = "8080"
 )
