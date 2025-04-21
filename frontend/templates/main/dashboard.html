@@ -10,6 +10,7 @@
     <script src='/static/assets/js/bootstrap.bundle.min.js'></script>
     <script src='/static/assets/js/jquery.min.js'></script>
     <script src='/static/assets/js/main.js'></script>
+    <script src='/static/assets/js/dashboard.js'></script>
 </head>
 
 <body class="d-flex flex-column min-vh-100">
@@ -49,8 +50,26 @@
 
         <!-- Main Content -->
         <div class="p-4 flex-grow-1">
-            <h1>Welcome to the Dashboard</h1>
-            <p>Select an option from the menu to get started.</p>
+            <h1>Scans</h1>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Example rows, replace with dynamic content as needed -->
+                    {{ range $key, $value := .scans }}
+                    <tr>
+                        <td>{{ $key }}</td>
+                        <td>{{ $value }}</td>
+                    </tr>
+                     {{ end }}
+                </tbody>
+            </table>
+            <button class="btn btn-primary mt-3" id="new-scan">New Scan</button>
+            <span class="text-muted mt-3 d-block d-none" id="hint">This may take a while.</span>
         </div>
     </div>
 

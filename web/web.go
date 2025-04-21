@@ -18,7 +18,7 @@ const (
 	assetsDir    = "frontend/assets/"
 	templatesDir = "frontend/templates/**/*.html"
 	// PORT is the port the server will listen on.
-	PORT = "8081"
+	PORT = "8080"
 )
 
 // SetupServer creates a server, and sets up routes, middleware and assets.
@@ -75,16 +75,13 @@ func registerRoutes(r *gin.Engine) {
 	authenticatedRoutes := r.Group("/", Authentication)
 	authenticatedRoutes.GET("/dashboard", ShowDashboard)
 	authenticatedRoutes.DELETE("/logout", LogoutUser)
-	authenticatedRoutes.GET("/create-nmap-scan", StartScanHandler)
+	authenticatedRoutes.POST("/scans", StartScanHandler)
 
 	r.GET("/", HomeHandler)
 	r.GET("/register", ShowRegistrationForm)
 	r.POST("/register", RegisterUser)
 	r.GET("/login", ShowLoginForm)
 	r.POST("/login", LoginUser)
-
-	// for local tetsing
-	//r.GET("/create-nmap-scan/:id", GetParsedScanResult)
 
 }
 
