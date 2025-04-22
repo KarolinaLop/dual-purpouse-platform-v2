@@ -1,6 +1,10 @@
 package models
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"fmt"
+	"strings"
+)
 
 // ScanResult model to hold values of my XML file.
 type ScanResult struct {
@@ -22,6 +26,18 @@ type Address struct {
 
 type Ports struct {
 	Ports []Port `xml:"port"`
+}
+
+func (p Ports) OpenPorts() string {
+	openPorts := ""
+	// iterate over the ports slice
+	for _, port := range p.Ports {
+		if port.State.State == "open" {
+			openPorts = fmt.Sprintf("%s, %d", openPorts, port.PortID)
+		}
+	}
+
+	return strings.TrimPrefix(openPorts, ",")
 }
 
 type Port struct {

@@ -17,12 +17,14 @@ func ShowDashboard(c *gin.Context) {
 	if !ok {
 		err := errors.New("failed to find the user in this context")
 		c.Error(err)
+		return
 	}
 
 	scans, err := data.GetAllNmapScans(data.DB, user.ID)
 	if err != nil {
 		err = fmt.Errorf("failed to retrieve scans: %w", err)
 		c.Error(err)
+		return
 	}
 
 	c.HTML(http.StatusOK, "dashboard.html", gin.H{

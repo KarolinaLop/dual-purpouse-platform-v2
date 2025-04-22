@@ -74,6 +74,7 @@ func registerRoutes(r *gin.Engine) {
 	authenticatedRoutes.GET("/dashboard", ShowDashboard)
 	authenticatedRoutes.DELETE("/logout", LogoutUser)
 	authenticatedRoutes.POST("/scans", StartScanHandler)
+	authenticatedRoutes.GET("/scans/:id/show", ShowScanDetails)
 
 	r.GET("/", HomeHandler)
 	r.GET("/register", ShowRegistrationForm)

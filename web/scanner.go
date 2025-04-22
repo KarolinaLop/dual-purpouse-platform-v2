@@ -138,31 +138,3 @@ type hostRow struct {
 	MAC       string
 	OpenPorts string
 }
-
-// parseNmapXML parses the xml file and stores the information in a ScanResult.
-// func ParseNmapXML(filename string) (models.ScanResult, error) {
-
-// 	// Open xml file
-// 	xmlFile, err := os.Open(filename)
-// 	// If os.Open returns error then handle it
-// 	if err != nil {
-// 		return models.ScanResult{}, err
-// 	}
-// 	defer xmlFile.Close()
-
-// 	fmt.Println("Sucessfully Opened scan-result.xml")
-
-// 	// Read the open XML
-// 	byteValue, err := io.ReadAll(xmlFile)
-// 	if err != nil {
-// 		return models.ScanResult{}, fmt.Errorf("parseNmapXML: could not read xml file: %w", err)
-// 	}
-
-// 	// Init my ScanResult model
-// 	var result models.ScanResult
-// 	if err := xml.Unmarshal(byteValue, &result); err != nil {
-// 		return models.ScanResult{}, err
-// 	}
-
-// 	return result, nil
-// }
