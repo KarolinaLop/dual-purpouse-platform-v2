@@ -11,6 +11,7 @@
     <script src='/static/assets/js/jquery.min.js'></script>
     <script src='/static/assets/js/main.js'></script>
     <script src='/static/assets/js/dashboard.js'></script>
+    <script src="/static/assets/js/formattimestamp.js"></script>
 </head>
 
 <body class="d-flex flex-column min-vh-100">
@@ -64,7 +65,7 @@
                     {{ range $id, $timestamp := .scans }}
                     <tr>
                         <td>{{ $id }}</td>
-                        <td>{{ $timestamp }}</td>
+                        <td class = "timestamp">{{ $timestamp }}</td>
                         <td><a href="/scans/{{ $id }}/show">Show Details</a></td>
                     </tr>
                      {{ end }}

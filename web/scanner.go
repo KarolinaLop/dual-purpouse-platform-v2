@@ -111,7 +111,7 @@ func ShowScanDetails(c *gin.Context) {
 	// iterate over the result's hosts and append a new hostRow to rows
 	for _, host := range result.Hosts {
 		newRow := hostRow{
-			OpenPorts: host.Ports.OpenPorts(),
+			OpenPorts: host.Ports.OpenPortsWithServices(),
 		}
 		for _, hostAddress := range host.Addresses {
 			switch hostAddress.AddrType {
@@ -119,6 +119,11 @@ func ShowScanDetails(c *gin.Context) {
 				newRow.IPv4 = hostAddress.Addr
 			case "mac":
 				newRow.MAC = hostAddress.Addr
+				//newRow.Vendor = hostAddress.Vendor
+				newRow.Vendor = models.CleanVendorName(hostAddress.Vendor)
+				if newRow.Vendor == "" {
+					newRow.Vendor = "Unknown"
+				}
 			}
 		}
 
@@ -136,5 +141,6 @@ func ShowScanDetails(c *gin.Context) {
 type hostRow struct {
 	IPv4      string
 	MAC       string
+	Vendor    string
 	OpenPorts string
 }

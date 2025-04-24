@@ -56,7 +56,8 @@
                 <thead>
                     <th scope="col">Host IP address</th>
                     <th scope="col">Host MAC addres</th>
-                    <th scope="col">Ports</th>
+                    <th scope="col">Vendor</th>
+                    <th scope="col">Open ports (Service)</th>
                 </thead>
                 <tbody>
                     <!-- range over the result's hosts and create a row for each host -->
@@ -64,6 +65,7 @@
                     <tr scope="row">
                         <td>{{$row.IPv4}}</td>
                         <td>{{$row.MAC}}</td>
+                        <td><span class="text-muted">{{$row.Vendor}}</span></td>
                         <td>{{$row.OpenPorts}}</td>
                     </tr>
                     {{end}}

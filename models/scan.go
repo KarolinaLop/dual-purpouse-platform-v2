@@ -3,7 +3,9 @@ package models
 import (
 	"encoding/xml"
 	"fmt"
+	"html"
 	"strings"
+	"time"
 )
 
 // ScanResult model to hold values of my XML file.
@@ -24,20 +26,31 @@ type Address struct {
 	Vendor   string `xml:"vendor,attr,omitempty"`
 }
 
+// CleanVendorName cleans up encoded characters from vendor names.
+func CleanVendorName(vendor string) string {
+	vendor = html.UnescapeString(vendor)             // Unescapes HTML entities
+	vendor = strings.ReplaceAll(vendor, "ï¼", ", ") // Replaces weird symbol with comma
+	vendor = strings.TrimSpace(vendor)
+	return vendor
+}
+
 type Ports struct {
 	Ports []Port `xml:"port"`
 }
 
-func (p Ports) OpenPorts() string {
-	openPorts := ""
-	// iterate over the ports slice
+func (p Ports) OpenPortsWithServices() string {
+	var result []string
 	for _, port := range p.Ports {
 		if port.State.State == "open" {
-			openPorts = fmt.Sprintf("%s, %d", openPorts, port.PortID)
+			// Default to "unknown" if no service info available
+			service := "unknown"
+			if port.Service != nil && port.Service.Name != "" {
+				service = port.Service.Name
+			}
+			result = append(result, fmt.Sprintf("%d (%s)", port.PortID, service))
 		}
 	}
-
-	return strings.TrimPrefix(openPorts, ",")
+	return strings.Join(result, ", ")
 }
 
 type Port struct {
@@ -59,4 +72,34 @@ type Service struct {
 	Method    string `xml:"method,attr,omitempty"`
 	Conf      string `xml:"conf,attr,omitempty"`
 	ExtraInfo string `xml:"extrainfo,attr,omitempty"`
+}
+
+type Scan struct {
+	ID        int
+	Timestamp string
+}
+
+type PageData struct {
+	UserName string
+	Scans    []Scan
+}
+
+func formatTimestamp(timestamp string) string {
+	parsedTime, err := time.Parse(time.RFC3339, timestamp)
+	if err != nil {
+		return timestamp // Return the original if parsing fails
+	}
+	return parsedTime.Format("January 2, 2006, 3:04 PM")
+}
+
+// Example usage
+func main() {
+	scans := []Scan{
+		{ID: 1, Timestamp: "2025-04-18T14:46:32Z"},
+		{ID: 2, Timestamp: "2025-04-19T10:30:00Z"},
+	}
+
+	for i, scan := range scans {
+		scans[i].Timestamp = formatTimestamp(scan.Timestamp)
+	}
 }
