@@ -15,8 +15,6 @@ import (
 )
 
 const (
-	assetsDir    = "frontend/assets/"
-	templatesDir = "frontend/templates/**/*.html"
 	// PORT is the port the server will listen on.
 	PORT = "8080"
 )
@@ -71,15 +69,19 @@ func SetupServer() *http.Server {
 }
 
 func registerRoutes(r *gin.Engine) {
-	authenticatedRoutes := r.Group("/", Authentication)
-	authenticatedRoutes.GET("/dashboard", gin.HandlerFunc(ShowDashboard))
-	authenticatedRoutes.DELETE("/logout", gin.HandlerFunc(LogoutUser))
 
-	r.GET("/", gin.HandlerFunc(HomeHandler))
-	r.GET("/register", gin.HandlerFunc(ShowRegistrationForm))
-	r.POST("/register", gin.HandlerFunc(RegisterUser))
-	r.GET("/login", gin.HandlerFunc(ShowLoginForm))
-	r.POST("/login", gin.HandlerFunc(LoginUser))
+	authenticatedRoutes := r.Group("/", Authentication)
+	authenticatedRoutes.GET("/dashboard", ShowDashboard)
+	authenticatedRoutes.DELETE("/logout", LogoutUser)
+	authenticatedRoutes.POST("/scans", StartScanHandler)
+	authenticatedRoutes.GET("/scans/:id/show", ShowScanDetails)
+
+	r.GET("/", HomeHandler)
+	r.GET("/register", ShowRegistrationForm)
+	r.POST("/register", RegisterUser)
+	r.GET("/login", ShowLoginForm)
+	r.POST("/login", LoginUser)
+
 }
 
 // ErrorHandler is our error handling Middleware.

@@ -11,7 +11,6 @@
     <script src='/static/assets/js/jquery.min.js'></script>
     <script src='/static/assets/js/main.js'></script>
     <script src='/static/assets/js/dashboard.js'></script>
-    <script src="/static/assets/js/formattimestamp.js"></script>
 </head>
 
 <body class="d-flex flex-column min-vh-100">
@@ -19,7 +18,8 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <a class="navbar-brand fs-3 fw-bold" href="#">Web-Based Network Scanner</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -51,28 +51,28 @@
 
         <!-- Main Content -->
         <div class="p-4 flex-grow-1">
-            <h1>Scans</h1>
-            <table class="table table-striped">
+            <h1>Scan</h1>
+            <table class="table">
                 <thead>
-                    <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Date</th>
-                        <th scope="col">Scan Results</th>
-                    </tr>
+                    <th scope="col">Host IP address</th>
+                    <th scope="col">Hostname</th>
+                    <th scope="col">Host MAC addres</th>
+                    <th scope="col">Vendor</th>
+                    <th scope="col">Open ports (Service)</th>
                 </thead>
                 <tbody>
-                    <!-- Example rows, replace with dynamic content as needed -->
-                    {{ range $id, $timestamp := .scans }}
-                    <tr>
-                        <td>{{ $id }}</td>
-                        <td class = "timestamp">{{ $timestamp }}</td>
-                        <td><a href="/scans/{{ $id }}/show">Show Details</a></td>
+                    <!-- range over the result's hosts and create a row for each host -->
+                    {{ range $row := .rows }}
+                    <tr scope="row">
+                        <td>{{$row.IPv4}}</td>
+                        <td>{{$row.Hostname}}</td>
+                        <td>{{$row.MAC}}</td>
+                        <td><span class="text-muted">{{$row.Vendor}}</span></td>
+                        <td>{{$row.OpenPorts}}</td>
                     </tr>
-                     {{ end }}
+                    {{end}}
                 </tbody>
             </table>
-            <button class="btn btn-primary mt-3" id="new-scan">New Scan</button>
-            <span class="text-muted mt-3 d-block d-none" id="hint">This may take a while.</span>
         </div>
     </div>
 

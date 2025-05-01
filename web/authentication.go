@@ -26,9 +26,6 @@ func Authentication(c *gin.Context) {
 func isAuthenticated(c *gin.Context) bool {
 	// Get the session from the request
 	session := sessions.Default(c)
-	if session == nil {
-		return false
-	}
 
 	// Check if the user is logged in
 	userID := session.Get("user_id")
@@ -131,14 +128,6 @@ func LogoutUser(c *gin.Context) {
 
 	// Get the session
 	session := sessions.Default(c)
-	if session == nil {
-		c.HTML(http.StatusBadRequest, "login.html", gin.H{
-			"title":   "Login",
-			"message": "Session not found",
-		})
-		return
-	}
-
 	if err := data.DeleteSessions(data.DB, session.Get("user_id").(int)); err != nil {
 		c.Error(err)
 		return

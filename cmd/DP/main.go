@@ -6,6 +6,7 @@ import (
 	"github.com/KarolinaLop/dp/web"
 )
 
+// Entry point to my app
 func main() {
 	s := web.SetupServer()
 

@@ -33,7 +33,7 @@ func RegisterUser(c *gin.Context) {
 
 	// Validate the form data
 	if form.Username == "" || form.Email == "" || form.Password == "" {
-		c.Error(errors.New("All fields are required"))
+		c.Error(errors.New("all fields are required"))
 		return
 	}
 
@@ -44,7 +44,7 @@ func RegisterUser(c *gin.Context) {
 	}
 
 	if exists {
-		c.Error(errors.New("User already exists"))
+		c.Error(errors.New("user already exists"))
 		return
 	}
 

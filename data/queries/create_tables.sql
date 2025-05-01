@@ -12,3 +12,12 @@ CREATE TABLE IF NOT EXISTS sessions (
 	user_id INTEGER NOT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Table for storing Nmap scan results as a string
+CREATE TABLE IF NOT EXISTS scans (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    result_xml TEXT NOT NULL, -- Raw Nmap XML as a string
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
