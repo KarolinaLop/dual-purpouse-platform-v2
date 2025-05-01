@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"html"
 	"strings"
-	"time"
 )
 
 // ScanResult model to hold values of my XML file.
@@ -14,10 +13,20 @@ type ScanResult struct {
 	Hosts   []Host   `xml:"host"`
 }
 
-// Host holds the addresses
+// Host holds the addresses, hostnames and ports
 type Host struct {
 	Addresses []Address `xml:"address"`
+	Hostnames Hostnames `xml:"hostnames"`
 	Ports     Ports     `xml:"ports"`
+}
+
+type Hostnames struct {
+	Hostnames []Hostname `xml:"hostname"`
+}
+
+type Hostname struct {
+	Name string `xml:"name,attr"`
+	Type string `xml:"type,attr"`
 }
 
 type Address struct {
@@ -72,34 +81,4 @@ type Service struct {
 	Method    string `xml:"method,attr,omitempty"`
 	Conf      string `xml:"conf,attr,omitempty"`
 	ExtraInfo string `xml:"extrainfo,attr,omitempty"`
-}
-
-type Scan struct {
-	ID        int
-	Timestamp string
-}
-
-type PageData struct {
-	UserName string
-	Scans    []Scan
-}
-
-func formatTimestamp(timestamp string) string {
-	parsedTime, err := time.Parse(time.RFC3339, timestamp)
-	if err != nil {
-		return timestamp // Return the original if parsing fails
-	}
-	return parsedTime.Format("January 2, 2006, 3:04 PM")
-}
-
-// Example usage
-func main() {
-	scans := []Scan{
-		{ID: 1, Timestamp: "2025-04-18T14:46:32Z"},
-		{ID: 2, Timestamp: "2025-04-19T10:30:00Z"},
-	}
-
-	for i, scan := range scans {
-		scans[i].Timestamp = formatTimestamp(scan.Timestamp)
-	}
 }

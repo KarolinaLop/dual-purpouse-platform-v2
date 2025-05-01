@@ -17,7 +17,7 @@
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand fs-3 fw-bold" href="#">Dual Purpose Platform</a>
+            <a class="navbar-brand fs-3 fw-bold" href="#">Web-Based Network Scanner</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -55,6 +55,7 @@
             <table class="table">
                 <thead>
                     <th scope="col">Host IP address</th>
+                    <th scope="col">Hostname</th>
                     <th scope="col">Host MAC addres</th>
                     <th scope="col">Vendor</th>
                     <th scope="col">Open ports (Service)</th>
@@ -64,6 +65,7 @@
                     {{ range $row := .rows }}
                     <tr scope="row">
                         <td>{{$row.IPv4}}</td>
+                        <td>{{$row.Hostname}}</td>
                         <td>{{$row.MAC}}</td>
                         <td><span class="text-muted">{{$row.Vendor}}</span></td>
                         <td>{{$row.OpenPorts}}</td>

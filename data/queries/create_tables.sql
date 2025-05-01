@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE TABLE IF NOT EXISTS scans (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    result_xml TEXT NOT NULL, -- Raw Nmap XML as string
+    result_xml TEXT NOT NULL, -- Raw Nmap XML as a string
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES users(id)
 );

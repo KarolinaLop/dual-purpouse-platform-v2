@@ -21,7 +21,7 @@ func StartScanHandler(c *gin.Context) {
 
 	log.Println("Scan has started, it may take a while")
 
-	// Generate a unique scan-result file name
+	// Generate a unique scan-result-*** file name
 	filename := fmt.Sprintf("scan-result-%s.xml", uuid.New().String())
 
 	log.Println("A new scan file has been crated:  ", filename)
@@ -31,6 +31,7 @@ func StartScanHandler(c *gin.Context) {
 	// TODO: make the address configurable or discoverable by the code
 	target := "192.168.1.0/24" // Temp my network address
 
+	// Run teh command
 	currentCmd := exec.Command(
 		"nmap",   // Run the Nmap scan
 		"-Pn",    // Host discovery, disables ping, treats all hosts as online
@@ -44,7 +45,6 @@ func StartScanHandler(c *gin.Context) {
 		target,
 	)
 
-	// Run the command
 	output, err := currentCmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Scan failed: %v\n Output: %s", err, string(output))
@@ -78,7 +78,7 @@ func StartScanHandler(c *gin.Context) {
 
 // ShowScanDetails displays scan by ID from the database, pasres the XML, and returns it as structured HTML data
 func ShowScanDetails(c *gin.Context) {
-	scanID := c.Param("id") // GET from route like /scans/:id/show
+	scanID := c.Param("id")
 
 	rawXML, err := data.GetNampXMLScanByID(data.DB, scanID)
 	if err != nil {
@@ -125,6 +125,13 @@ func ShowScanDetails(c *gin.Context) {
 					newRow.Vendor = "Unknown"
 				}
 			}
+			// Grab the first hostname, if available
+			if len(host.Hostnames.Hostnames) > 0 {
+				newRow.Hostname = host.Hostnames.Hostnames[0].Name
+			} else {
+				newRow.Hostname = "Unknown"
+			}
+
 		}
 
 		// append it to the rows slice
@@ -140,6 +147,7 @@ func ShowScanDetails(c *gin.Context) {
 
 type hostRow struct {
 	IPv4      string
+	Hostname  string
 	MAC       string
 	Vendor    string
 	OpenPorts string

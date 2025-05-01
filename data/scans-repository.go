@@ -4,7 +4,7 @@ import (
 	"database/sql"
 )
 
-// // Scan represents a record to be saved
+// Scan represents a record to be saved
 // type Scan struct {
 // 	ID        int
 // 	UserId    int
