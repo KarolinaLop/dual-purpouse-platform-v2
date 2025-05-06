@@ -112,7 +112,7 @@ func LoginUser(c *gin.Context) {
 	}
 
 	// Redirect to the main page
-	c.Redirect(http.StatusFound, "/dashboard")
+	c.Redirect(http.StatusFound, "/scans")
 }
 
 func createUserSession(c *gin.Context, user models.User) error {

@@ -1,0 +1,107 @@
+.nowrap {
+    white-space: nowrap;
+}
+
+#table-container {
+    overflow-y: scroll !important;
+    max-height: 300px;
+}
+
+#chart-container{
+    min-height: 300px;
+    max-height: 300px;
+}
+
+
+#services td:nth-child(1),
+#services th:nth-child(1),
+#services td:nth-child(2),
+#services th:nth-child(2) {
+    width: 1%;
+    white-space: nowrap;
+    /* Prevent content from wrapping */
+}
+
+
+/* Catppuccin Latte overrides for Bootstrap 5 */
+
+/* .bg-light {
+    background-color: #eff1f5;
+} */
+
+.card,
+--bs-card-bg,
+table.table tr td,
+table.table tr th {
+    /* background-color: #e6e9ef !important; */
+    background-color: #efeff3 !important;
+}
+
+.progress-bar, span.badge.bg-primary {
+    background-color: #7287fd !important;
+}
+
+span.badge.bg-primary {
+    color: #e2e6ec !important;
+}
+
+
+
+/* nav bar : #acb0be*/
+nav.navbar{
+    background-color: #d7dce4 !important; 
+}
+
+#menu {
+    background-color: #e2e6ec !important;
+}
+
+.bg-light {
+    background-color: #efeff3 !important;
+}
+
+table.table tr td, p.fs-1 {
+    color: #6c6f85 !important;
+}
+
+th, h5.card-title, #menu h4, a.navbar-brand, #scans-header {
+    color: #4c4f69 !important;
+}
+
+#menu .nav-link {
+    color: #fe640b !important;
+}
+
+p.display-1 {
+    color: #dd7878 !important;
+}
+
+a#logout {
+    background-color: #4c4f69 !important;
+}
+
+a#login, #new-scan {
+    background-color: #fe640b !important;
+    border-color: #fe640b;
+}
+
+/* a#register {
+    background-color: #6c6f85 !important;
+} */
+
+.user-name {
+    color: #4c4f69 !important;
+}
+
+.details-link {
+    color: #1e66f5;
+}
+
+.delete-scan {
+    color: #d20f39;
+}
+
+
+/* menu :  #bcc0cc*/
+/* main bg : #eff1f5*/
+/* text :  #5c5f77*/

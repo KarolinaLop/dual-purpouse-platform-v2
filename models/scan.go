@@ -13,7 +13,7 @@ type ScanResult struct {
 	Hosts   []Host   `xml:"host"`
 }
 
-// Host holds the addresses, hostnames and ports
+// Host represents the entire <host> node, holds the addresses IP and MAC, hostnames and ports
 type Host struct {
 	Addresses []Address `xml:"address"`
 	Hostnames Hostnames `xml:"hostnames"`
@@ -44,15 +44,16 @@ func CleanVendorName(vendor string) string {
 }
 
 type Ports struct {
-	Ports []Port `xml:"port"`
+	Ports      []Port       `xml:"port"`
+	Extraports []Extraports `xml:"extraports"`
 }
 
 func (p Ports) OpenPortsWithServices() string {
 	var result []string
 	for _, port := range p.Ports {
 		if port.State.State == "open" {
-			// Default to "unknown" if no service info available
-			service := "unknown"
+			// Default to "N/A" if no service info available
+			service := "N/A"
 			if port.Service != nil && port.Service.Name != "" {
 				service = port.Service.Name
 			}
@@ -62,11 +63,71 @@ func (p Ports) OpenPortsWithServices() string {
 	return strings.Join(result, ", ")
 }
 
+func (sr ScanResult) OpenPorts() int {
+	var result int
+	for _, host := range sr.Hosts {
+		for _, port := range host.Ports.Ports {
+			if port.State.State == "open" {
+				result += 1
+			}
+		}
+	}
+
+	fmt.Printf("Open Ports: %d\n", result)
+	return result
+}
+
+func (sr ScanResult) ClosedPorts() int {
+	var result int
+	for _, host := range sr.Hosts {
+		for _, port := range host.Ports.Extraports {
+			if port.State == "closed" {
+				result += port.Count
+			}
+		}
+	}
+	fmt.Printf("Closed Ports: %d\n", result)
+	return result
+}
+
+func (sr ScanResult) FileredPorts() int {
+	var result int
+	for _, host := range sr.Hosts {
+		for _, port := range host.Ports.Extraports {
+			if port.State == "filtered" {
+				result += port.Count
+			}
+		}
+	}
+	fmt.Printf("Filtered Ports: %d\n", result)
+	return result
+}
+
 type Port struct {
 	Protocol string   `xml:"protocol,attr"`
 	PortID   int      `xml:"portid,attr"`
 	State    State    `xml:"state"`
-	Service  *Service `xml:"service"` // optional
+	Service  *Service `xml:"service"`
+}
+
+// type Extraports struct {
+// 	State State `xml:"state"`
+// 	Count int   `xml:"count"`
+// }
+
+// Extraports represents the <extraports> element in the XML.
+type Extraports struct {
+	State   string        `xml:"state,attr"`
+	Count   int           `xml:"count,attr"`
+	Proto   string        `xml:"proto,attr,omitempty"`
+	Ports   string        `xml:"ports,attr,omitempty"`
+	Reason  string        `xml:"reason,attr,omitempty"`
+	Reasons []ExtraReason `xml:"extrareasons"`
+}
+
+// ExtraReason represents the <extrareasons> element inside <extraports>.
+type ExtraReason struct {
+	Reason string `xml:"reason,attr"`
 }
 
 type State struct {

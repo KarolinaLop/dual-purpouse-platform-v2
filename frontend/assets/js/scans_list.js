@@ -1,15 +1,17 @@
-
 $(document).ready(function () {
-    // register click event for the logout button
-    $('#logout').on('click', function (e) {
+    console.log("scans_list.js was loaded");
+    $('a.delete-scan').on('click', function (e) {
         e.preventDefault(); // Prevent the link from navigating
+        console.log("click event was triggered");
+        const href = $(this).attr('href');
 
         $.ajax({
-            url: '/logout',
+            url: href,
             type: 'DELETE',
             success: function () {
-                // Redirect to login or homepage after logout
-                window.location.href = '/login';
+               
+                // delete a row from table
+                $(e.target).closest('tr').remove();
             },
             error: function (xhr, status, error) {
                 console.error('Logout failed:', error);

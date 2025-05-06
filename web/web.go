@@ -71,17 +71,17 @@ func SetupServer() *http.Server {
 func registerRoutes(r *gin.Engine) {
 
 	authenticatedRoutes := r.Group("/", Authentication)
-	authenticatedRoutes.GET("/dashboard", ShowDashboard)
+	authenticatedRoutes.GET("/scans", ShowScansList)
 	authenticatedRoutes.DELETE("/logout", LogoutUser)
 	authenticatedRoutes.POST("/scans", StartScanHandler)
 	authenticatedRoutes.GET("/scans/:id/show", ShowScanDetails)
+	authenticatedRoutes.DELETE("/scans/:id", DeleteScan)
 
 	r.GET("/", HomeHandler)
 	r.GET("/register", ShowRegistrationForm)
 	r.POST("/register", RegisterUser)
 	r.GET("/login", ShowLoginForm)
 	r.POST("/login", LoginUser)
-
 }
 
 // ErrorHandler is our error handling Middleware.
