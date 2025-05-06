@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -17,8 +18,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// ShowScansList renders the scans list page.
-func ShowScansList(c *gin.Context) {
+// ShowScansListHandler renders the scans list page.
+func ShowScansListHandler(c *gin.Context) {
 	// call some data package func that loads all scans for the current user from the db
 	user, ok := c.Value("user").(models.User) // type assertion and interfaces
 	if !ok {
@@ -34,9 +35,17 @@ func ShowScansList(c *gin.Context) {
 		return
 	}
 
+	IP, err := getTheHostIPAddress()
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve local IP address: %w", err)
+		c.Error(err)
+		return
+	}
+
 	c.HTML(http.StatusOK, "scans_list.html", gin.H{
 		"userName": c.Value("user").(models.User).Name,
 		"scans":    scans,
+		"localIP":  IP,
 	})
 
 }
@@ -53,10 +62,16 @@ func StartScanHandler(c *gin.Context) {
 
 	defer os.Remove(filename)
 
-	// TODO: make the address configurable or discoverable by the code
-	target := "192.168.1.0/24" // Temp my network address
+	target, err := getNetworkAddress()
 
-	// Run teh command
+	if err != nil {
+		log.Printf("Scan failed: could not retrieve network address: %s", err)
+		c.Error(err)
+		return
+	}
+
+	// Run the command
+	// nmap -Pn -T4 -sS -sV -sP -oX new-file.xml -F 192.168.1.0/24
 	currentCmd := exec.Command(
 		"nmap",   // Run the Nmap scan
 		"-Pn",    // Host discovery, disables ping, treats all hosts as online
@@ -101,7 +116,69 @@ func StartScanHandler(c *gin.Context) {
 	}
 }
 
-func DeleteScan(c *gin.Context) {
+func getNetworkAddress() (string, error) {
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return "", fmt.Errorf("failed to get network interfaces: %w", err)
+	}
+
+	for _, iface := range interfaces {
+		// Skip interfaces that are down or not running
+		if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback != 0 {
+			continue
+		}
+
+		addrs, err := iface.Addrs()
+		if err != nil {
+			return "", fmt.Errorf("failed to get addresses for interface %s: %w", iface.Name, err)
+		}
+
+		for _, addr := range addrs {
+			ipNet, ok := addr.(*net.IPNet)
+			if ok && ipNet.IP.To4() != nil { // Check for IPv4
+				network := ipNet.IP.Mask(ipNet.Mask)
+				return fmt.Sprintf("%s/%d", network.String(), maskToCIDR(ipNet.Mask)), nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("no active network interface found")
+}
+
+func getTheHostIPAddress() (string, error) {
+
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return "", fmt.Errorf("failed to get local host IP address: %w", err)
+	}
+
+	for _, iface := range interfaces {
+		// Skip interfaces that are down or not running
+		if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback != 0 {
+			continue
+		}
+
+		addrs, err := iface.Addrs()
+		if err != nil {
+			return "", fmt.Errorf("failed to get the address on an interafce %s: %w", iface.Name, err)
+		}
+
+		for _, addr := range addrs {
+			ipNet, ok := addr.(*net.IPNet)
+			if ok && ipNet.IP.To4() != nil { // Check for IPv4
+				return ipNet.IP.To4().String(), nil
+			}
+		}
+	}
+	return "", errors.New("could not detect IP address")
+}
+
+func maskToCIDR(mask net.IPMask) int {
+	ones, _ := mask.Size()
+	return ones
+}
+
+func DeleteScanHandler(c *gin.Context) {
 	scanID := c.Param("id")
 	if err := data.DeleteScan(data.DB, scanID); err != nil {
 		c.Error(err)
@@ -110,8 +187,8 @@ func DeleteScan(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-// ShowScanDetails displays scan by ID from the database, pasres the XML, and returns it as structured HTML data
-func ShowScanDetails(c *gin.Context) {
+// ShowScanDetailsHandler displays scan by ID from the database, pasres the XML, and returns it as structured HTML data
+func ShowScanDetailsHandler(c *gin.Context) {
 	scanID := c.Param("id")
 
 	rawXML, err := data.GetNampXMLScanByID(data.DB, scanID)
@@ -137,6 +214,13 @@ func ShowScanDetails(c *gin.Context) {
 		return
 	}
 
+	IP, err := getTheHostIPAddress()
+	if err != nil {
+		err = fmt.Errorf("failed to parse the xml: %w", err)
+		c.Error(err)
+		return
+	}
+
 	// extract IPv4 address from host
 	rows := []hostRow{}
 
@@ -151,6 +235,9 @@ func ShowScanDetails(c *gin.Context) {
 			switch hostAddress.AddrType {
 			case "ipv4":
 				newRow.IPv4 = hostAddress.Addr
+				if newRow.IPv4 == IP {
+					newRow.IsLocalHost = true
+				}
 			case "mac":
 				newRow.MAC = hostAddress.Addr
 				//newRow.Vendor = hostAddress.Vendor
@@ -158,12 +245,6 @@ func ShowScanDetails(c *gin.Context) {
 				if newRow.Vendor == "" {
 					newRow.Vendor = "N/A"
 				}
-			}
-			// Grab the first hostname, if available
-			if len(host.Hostnames.Hostnames) > 0 {
-				newRow.Hostname = host.Hostnames.Hostnames[0].Name
-			} else {
-				newRow.Hostname = "N/A"
 			}
 
 		}
@@ -190,20 +271,15 @@ type ServiceDetails struct {
 	Percentage float64
 }
 
-//  goal: return a sorted slice of type ServiceDetails
-// we're using a slice, because maps cannot be sorted
-//1: change the function's return type to the slice - ok
-//2: create an empty slice just before returning the map previously - ok
-//3: range over the map and append the value from each iteration (this is of type SliceDetails) to the new slice
-//4: sort the slice, using the slices.SortFunc function, where you have to supply the slice you want to sort and then a custom comparison function
-// the compartison function needs to return 1 if a.Count is larger than b.Count, -1 if a.Count is less than b.Count and 0 otherwise
-
 func identifiedServices(result models.ScanResult) []ServiceDetails {
 	m := make(map[string]ServiceDetails)
 
 	// Loop through all hosts and their ports
 	for _, host := range result.Hosts {
 		for _, port := range host.Ports.Ports {
+			if port.Service == nil {
+				continue
+			}
 			details := m[port.Service.Name]
 			details.Count += 1
 			m[port.Service.Name] = details
@@ -247,10 +323,10 @@ func calcPercentage(max int, count int) float64 {
 }
 
 type hostRow struct {
-	Index     int
-	IPv4      string
-	Hostname  string
-	MAC       string
-	Vendor    string
-	OpenPorts string
+	Index       int
+	IPv4        string
+	MAC         string
+	Vendor      string
+	OpenPorts   string
+	IsLocalHost bool
 }

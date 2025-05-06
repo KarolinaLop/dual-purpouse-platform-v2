@@ -16,17 +16,7 @@ type ScanResult struct {
 // Host represents the entire <host> node, holds the addresses IP and MAC, hostnames and ports
 type Host struct {
 	Addresses []Address `xml:"address"`
-	Hostnames Hostnames `xml:"hostnames"`
 	Ports     Ports     `xml:"ports"`
-}
-
-type Hostnames struct {
-	Hostnames []Hostname `xml:"hostname"`
-}
-
-type Hostname struct {
-	Name string `xml:"name,attr"`
-	Type string `xml:"type,attr"`
 }
 
 type Address struct {
@@ -109,11 +99,6 @@ type Port struct {
 	State    State    `xml:"state"`
 	Service  *Service `xml:"service"`
 }
-
-// type Extraports struct {
-// 	State State `xml:"state"`
-// 	Count int   `xml:"count"`
-// }
 
 // Extraports represents the <extraports> element in the XML.
 type Extraports struct {

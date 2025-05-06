@@ -48,7 +48,7 @@ func SetupServer() *http.Server {
 	})
 
 	// Set up middleware
-	r.Use(gin.Logger(), ErrorHandler(), CacheControl(), sessions.Sessions("dp-session", store))
+	r.Use(gin.Logger(), ErrorHandlerMiddleware(), CacheControlMiddleware(), sessions.Sessions("dp-session", store))
 
 	r.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "error.html", gin.H{
@@ -70,22 +70,22 @@ func SetupServer() *http.Server {
 
 func registerRoutes(r *gin.Engine) {
 
-	authenticatedRoutes := r.Group("/", Authentication)
-	authenticatedRoutes.GET("/scans", ShowScansList)
-	authenticatedRoutes.DELETE("/logout", LogoutUser)
+	authenticatedRoutes := r.Group("/", AuthenticationMiddleware)
+	authenticatedRoutes.GET("/scans", ShowScansListHandler)
+	authenticatedRoutes.DELETE("/logout", LogoutUserHandler)
 	authenticatedRoutes.POST("/scans", StartScanHandler)
-	authenticatedRoutes.GET("/scans/:id/show", ShowScanDetails)
-	authenticatedRoutes.DELETE("/scans/:id", DeleteScan)
+	authenticatedRoutes.GET("/scans/:id/show", ShowScanDetailsHandler)
+	authenticatedRoutes.DELETE("/scans/:id", DeleteScanHandler)
 
 	r.GET("/", HomeHandler)
-	r.GET("/register", ShowRegistrationForm)
-	r.POST("/register", RegisterUser)
-	r.GET("/login", ShowLoginForm)
-	r.POST("/login", LoginUser)
+	r.GET("/register", ShowRegistrationFormHandler)
+	r.POST("/register", RegisterUserHandler)
+	r.GET("/login", ShowLoginFormHandler)
+	r.POST("/login", LoginUserHandler)
 }
 
-// ErrorHandler is our error handling Middleware.
-func ErrorHandler() gin.HandlerFunc {
+// ErrorHandlerMiddleware is our error handling Middleware.
+func ErrorHandlerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if gin.Mode() == gin.ReleaseMode {
 			// Recover from panic and log the error
@@ -122,8 +122,8 @@ func renderErrorPage(c *gin.Context, statusCode int, message string) {
 	})
 }
 
-// CacheControl is a middleware that sets the Cache-Control header to prevent caching.
-func CacheControl() gin.HandlerFunc {
+// CacheControlMiddleware is a middleware that sets the Cache-Control header to prevent caching.
+func CacheControlMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
 		c.Next()

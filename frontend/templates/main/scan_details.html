@@ -19,7 +19,7 @@
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
-            <a class="navbar-brand fs-3 fw-bold" href="#">Web-Based Network Scanner</a>
+            <a class="navbar-brand fs-3 fw-bold" href="/scans">Web-Based Network Scanner</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -28,7 +28,8 @@
                 <ul class="navbar-nav me-auto">
                 </ul>
                 <div class="d-flex">
-                    <img src="/static/assets/img/person-circle.svg" alt="User Icon" width="28" height="28" class="me-2 mt-1">
+                    <img src="/static/assets/img/person-circle.svg" alt="User Icon" width="28" height="28"
+                        class="me-2 mt-1">
                     <span class="navbar-text me-3 user-name">{{ .userName }}</span>
                     <a href="#" id="logout" class="btn btn-dark me-2">Logout</a>
                 </div>
@@ -131,7 +132,6 @@
                                 <thead>
                                     <th scope="col"></th>
                                     <th scope="col">Host IP address</th>
-                                    <th scope="col">Hostname</th>
                                     <th scope="col">Host MAC addres</th>
                                     <th scope="col">Vendor</th>
                                     <th scope="col">Open ports (Service)</th>
@@ -142,10 +142,11 @@
                                     <tr scope="row">
                                         <td>{{$row.Index}}</td>
                                         <td>
+                                            {{if .IsLocalHost}}
+                                            <span class="badge bg-secondary">{{$row.IPv4}} (localhost)</span>
+                                            {{else}}
                                             <span class="badge bg-primary">{{$row.IPv4}}</span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-secondary">{{$row.Hostname}}</span>
+                                            {{end}}
                                         </td>
                                         <td>{{$row.MAC}}</td>
                                         <td><span class="text-muted">{{$row.Vendor}}</span></td>

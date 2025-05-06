@@ -9,12 +9,33 @@ $(document).ready(function () {
             url: href,
             type: 'DELETE',
             success: function () {
-               
+
                 // delete a row from table
                 $(e.target).closest('tr').remove();
             },
             error: function (xhr, status, error) {
                 console.error('Logout failed:', error);
+            }
+        });
+    });
+
+    // register click event for the new scan button
+    $('#new-scan').on('click', function (e) {
+        // disable the button to prevent multiple clicks
+        $(this).prop('disabled', true);
+
+        $('span#hint').removeClass('d-none');
+        // show user feedback
+        $(this).html('Starting Scan...');
+        $.ajax({
+            url: '/scans',
+            type: 'POST',
+            success: function () {
+                // Redirect to scans list
+                window.location.href = '/scans';
+            },
+            error: function (xhr, status, error) {
+                console.error('Could not start scan:', error);
             }
         });
     });

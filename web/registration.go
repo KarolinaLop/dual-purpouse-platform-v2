@@ -11,8 +11,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// ShowRegistrationForm handles the GET request for the registration form.
-func ShowRegistrationForm(c *gin.Context) {
+// ShowRegistrationFormHandler handles the GET request for the registration form.
+func ShowRegistrationFormHandler(c *gin.Context) {
 	c.HTML(http.StatusOK, "registration.html", gin.H{})
 }
 
@@ -22,8 +22,8 @@ type registrationForm struct {
 	Password string `form:"password" binding:"required"`
 }
 
-// RegisterUser handles the POST request for the registration form.
-func RegisterUser(c *gin.Context) {
+// RegisterUserHandler handles the POST request for the registration form.
+func RegisterUserHandler(c *gin.Context) {
 	var form registrationForm
 
 	if err := c.ShouldBind(&form); err != nil {

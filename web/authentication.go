@@ -13,8 +13,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Authentication is a middleware that checks if the user is authenticated and redirects to the login page if not.
-func Authentication(c *gin.Context) {
+// AuthenticationMiddleware is a middleware that checks if the user is authenticated and redirects to the login page if not.
+func AuthenticationMiddleware(c *gin.Context) {
 	if !isAuthenticated(c) {
 		c.Redirect(http.StatusFound, "/login")
 		c.Abort()
@@ -49,8 +49,8 @@ func isAuthenticated(c *gin.Context) bool {
 	return true
 }
 
-// ShowLoginForm renders the login form.
-func ShowLoginForm(c *gin.Context) {
+// ShowLoginFormHandler renders the login form.
+func ShowLoginFormHandler(c *gin.Context) {
 	// Render the login form
 	c.HTML(http.StatusOK, "login.html", gin.H{
 		"title": "Login",
@@ -62,8 +62,8 @@ type loginForm struct {
 	Password string `form:"password" binding:"required"`
 }
 
-// LoginUser handles the login form submission.
-func LoginUser(c *gin.Context) {
+// LoginUserHandler handles the login form submission.
+func LoginUserHandler(c *gin.Context) {
 	var form loginForm
 	if err := c.ShouldBind(&form); err != nil {
 		c.Error(err)
@@ -122,9 +122,9 @@ func createUserSession(c *gin.Context, user models.User) error {
 	return session.Save()
 }
 
-// LogoutUser handles the logout action.
+// LogoutUserHandler handles the logout action.
 // It clears the session and redirects to the login page.
-func LogoutUser(c *gin.Context) {
+func LogoutUserHandler(c *gin.Context) {
 
 	// Get the session
 	session := sessions.Default(c)
