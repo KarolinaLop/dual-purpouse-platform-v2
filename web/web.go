@@ -78,6 +78,7 @@ func registerRoutes(r *gin.Engine) {
 	authenticatedRoutes.POST("/scans", StartScanHandler)
 	authenticatedRoutes.GET("/scans/:id/show", ShowScanDetailsHandler)
 	authenticatedRoutes.DELETE("/scans/:id", DeleteScanHandler)
+	authenticatedRoutes.GET("/scans/:id/status", CheckScanStatusHandler)
 
 	r.GET("/", HomeHandler)
 	r.GET("/register", ShowRegistrationFormHandler)

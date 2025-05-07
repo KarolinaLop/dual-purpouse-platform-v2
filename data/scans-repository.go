@@ -2,6 +2,8 @@ package data
 
 import (
 	"database/sql"
+
+	"github.com/KarolinaLop/dp/models"
 )
 
 // DeleteScan deletes a scan.
@@ -11,9 +13,19 @@ func DeleteScan(db *sql.DB, ID string) error {
 	return err
 }
 
-func StoreNmapScan(db *sql.DB, userID int, resultXML string) error {
-	query := "INSERT INTO scans (user_id, result_xml) VALUES (?, ?)"
-	_, err := db.Exec(query, userID, resultXML)
+func CreateScan(db *sql.DB, scanStatus string, userID int) (int64, error) {
+	query := "INSERT INTO scans (scan_status, user_id) VALUES (?,?)"
+	res, err := db.Exec(query, scanStatus, userID)
+	if err != nil {
+		return 0, err
+	}
+
+	return res.LastInsertId()
+}
+
+func UpdateScan(db *sql.DB, ID int64, status string, PID int, resultXML string) error {
+	query := "UPDATE scans SET scan_status = ?, pid = ?, result_xml = ?  WHERE id = ?"
+	_, err := db.Exec(query, status, PID, resultXML, ID)
 	return err
 }
 
@@ -24,10 +36,10 @@ func GetNampXMLScanByID(db *sql.DB, ID string) (string, error) {
 	return xmlData, err
 }
 
-func GetAllNmapScans(db *sql.DB, userID int) (map[int]string, error) {
-	results := make(map[int]string)
+func GetAllNmapScans(db *sql.DB, userID int) ([]models.Scan, error) {
+	results := []models.Scan{}
 
-	query := "SELECT id, created_at FROM scans WHERE user_id = ?"
+	query := "SELECT id, created_at, scan_status FROM scans WHERE user_id = ?"
 	rows, err := db.Query(query, userID)
 	if err != nil {
 		return nil, err
@@ -35,16 +47,24 @@ func GetAllNmapScans(db *sql.DB, userID int) (map[int]string, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		id := 0
-		createdAt := ""
-		if err := rows.Scan(&id, &createdAt); err != nil {
+		s := models.Scan{}
+		if err := rows.Scan(&s.ID, &s.Timestamp, &s.Status); err != nil {
 			return nil, err
 		}
-		results[id] = createdAt
+		results = append(results, s)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
 	return results, nil
+}
+
+func GetScanStatus(db *sql.DB, ID string) (status string, err error) {
+	query := "SELECT scan_status FROM scans WHERE id = ?"
+	if err = db.QueryRow(query, ID).Scan(&status); err != nil {
+		return "", err
+	}
+
+	return status, nil
 }

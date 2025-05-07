@@ -27,7 +27,8 @@
                 <ul class="navbar-nav me-auto">
                 </ul>
                 <div class="d-flex">
-                    <img src="/static/assets/img/person-circle.svg" alt="User Icon" width="28" height="28" class="me-2 mt-1">
+                    <img src="/static/assets/img/person-circle.svg" alt="User Icon" width="28" height="28"
+                        class="me-2 mt-1">
                     <span class="navbar-text me-3">{{ .userName }}</span>
                     <a href="#" id="logout" class="btn btn-dark me-2">Logout</a>
                 </div>
@@ -55,18 +56,24 @@
                     <tr>
                         <th scope="col">ID</th>
                         <th scope="col">Date</th>
+                        <th scope="col">Status</th>
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <!-- Example rows, replace with dynamic content as needed -->
-                    {{ range $id, $timestamp := .scans }}
+                    {{ range $scan := .scans }}
                     <tr>
-                        <td>{{ $id }}</td>
-                        <td class="timestamp">{{ $timestamp }}</td>
+                        <td>{{ $scan.ID }}</td>
+                        <td class="timestamp">{{ $scan.Timestamp }}</td>
+                        <td>{{ $scan.Status }}</td>
                         <td>
-                            <a href="/scans/{{ $id }}/show" class="details-link">Show Details</a>
-                            <a href="/scans/{{ $id }}" class="delete-scan mx-5">Delete Scan</a>
+                            {{ if eq $scan.Status "Done" }}
+                            <a href="/scans/{{ $scan.ID }}/show" class="details-link">Show Details</a>
+                            {{ else }}
+                            <span class="text-muted">Not Available</span>
+                            {{ end }}
+                            <a href="/scans/{{ $scan.ID }}" class="delete-scan mx-5">Delete Scan</a>
                         </td>
                     </tr>
                     {{ end }}

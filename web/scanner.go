@@ -50,6 +50,18 @@ func ShowScansListHandler(c *gin.Context) {
 
 }
 
+func CheckScanStatusHandler(c *gin.Context) {
+	scanID := c.Param("id")
+	status, err := data.GetScanStatus(data.DB, scanID)
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve scan status: %w", err)
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, fmt.Sprintf("{status: %s}", status))
+}
+
 // StartScanHandler runs an Nmap scan, reads the XML output and saves to DB.
 func StartScanHandler(c *gin.Context) {
 
@@ -60,60 +72,98 @@ func StartScanHandler(c *gin.Context) {
 
 	log.Println("A new scan file has been crated:  ", filename)
 
-	defer os.Remove(filename)
-
 	target, err := getNetworkAddress()
-
 	if err != nil {
 		log.Printf("Scan failed: could not retrieve network address: %s", err)
 		c.Error(err)
 		return
 	}
 
-	// Run the command
-	// nmap -Pn -T4 -sS -sV -sP -oX new-file.xml -F 192.168.1.0/24
-	currentCmd := exec.Command(
-		"nmap",   // Run the Nmap scan
-		"-Pn",    // Host discovery, disables ping, treats all hosts as online
-		"-T4",    // Sets timig for faster scans
-		"-sS",    // Stealth SYN scan for open ports
-		"-sV",    // Probes ports for srvices and versions
-		"--open", // Lists only open ports
-		"-oX",    // Produces XML output
-		filename, // Saves output as XML file
-		"-F",     // Fast scan, scans only the most popular ports
-		target,
-	)
-
-	output, err := currentCmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Scan failed: %v\n Output: %s", err, string(output))
-		c.Error(err)
-		return
-	}
-
-	// Read the XML output from file
-	xmlBytes, err := os.ReadFile(filename) // os.ReadFiles returns a slice of byte -> func ReadFile(name string) ([]byte, error)
-	if err != nil {
-		err = fmt.Errorf("failed to read scan results from file: %w", err)
-		c.Error(err)
-		return
-	}
+	_ = target
 
 	// Get user from context
 	user, ok := c.Value("user").(models.User)
 	if !ok {
+		// update the scan, set status to 'failed'
 		err := errors.New("failed to find the user in this context")
-		c.Error(err)
-	}
-
-	// Save to DB
-	err = data.StoreNmapScan(data.DB, user.ID, string(xmlBytes)) // converts the xmlBytes slice (from the previously read file) into a string so it can be stored in the database
-	if err != nil {
-		err = fmt.Errorf("failed to save the scan results to database: %w", err)
 		c.Error(err)
 		return
 	}
+
+	scanID, err := data.CreateScan(data.DB, "Pending", user.ID)
+	if err != nil {
+		err = fmt.Errorf("could not create a new scan: %w", err)
+		c.Error(err)
+		return
+	}
+
+	// Run the command
+	// nmap -Pn -T4 -sS -sV -sP -oX new-file.xml -F 192.168.1.0/24
+	// currentCmd := exec.Command(
+	// 	"nmap",   // Run the Nmap scan
+	// 	"-Pn",    // Host discovery, disables ping, treats all hosts as online
+	// 	"-T4",    // Sets timig for faster scans
+	// 	"-sS",    // Stealth SYN scan for open ports
+	// 	"-sV",    // Probes ports for srvices and versions
+	// 	"--open", // Lists only open ports
+	// 	"-oX",    // Produces XML output
+	// 	filename, // Saves output as XML file
+	// 	"-F",     // Fast scan, scans only the most popular ports
+	// 	target,
+	// )
+
+	currentCmd := exec.Command("ls")
+	go func() {
+		defer os.Remove(filename)
+		// Start the command
+		if err := currentCmd.Start(); err != nil {
+			log.Printf("Failed to start the scan: %v", err)
+			c.Error(err)
+			return
+		}
+		fmt.Println("Process ID is: ", currentCmd.Process.Pid)
+
+		err = data.UpdateScan(data.DB, scanID, "Running", currentCmd.Process.Pid, "")
+		if err != nil {
+			err = fmt.Errorf("failed to update scan: %w", err)
+			// TODO: update the scan, set status to 'failed'
+			c.Error(err)
+			return
+		}
+
+		output, err := currentCmd.CombinedOutput()
+		if err != nil {
+			log.Printf("Scan failed: %v\n Output: %s", err, string(output))
+			c.Error(err)
+			return
+		}
+
+		// get the process id somehow and update the scan status to 'running'
+
+		// Read the XML output from file
+		xmlBytes, err := os.ReadFile(filename) // os.ReadFiles returns a slice of byte -> func ReadFile(name string) ([]byte, error)
+		if err != nil {
+			err = fmt.Errorf("failed to read scan results from file: %w", err)
+			// update the scan, set status to 'failed'
+			c.Error(err)
+			return
+		}
+
+		// Save to DB
+		err = data.UpdateScan(data.DB, scanID, "Done", currentCmd.Process.Pid, string(xmlBytes))
+		if err != nil {
+			err = fmt.Errorf("failed to update scan: %w", err)
+			// TODO: update the scan, set status to 'failed'
+			c.Error(err)
+			return
+		}
+	}()
+
+	// stage 1: store a new scan with its auto generated ID, timestamp, status 'pending', PID (at this stage no XML)
+	// stage 2: update the scan with the results XML, update the status too
+
+	// redirect to the /scans page, so the table is refreshed
+	c.Redirect(http.StatusSeeOther, "/scans")
 }
 
 func getNetworkAddress() (string, error) {
@@ -200,7 +250,7 @@ func ShowScanDetailsHandler(c *gin.Context) {
 
 	// Parse into ScanResult struct
 	var result models.ScanResult                                   // var declaration of type -> my big struct ScanResults
-	if err := xml.Unmarshal([]byte(rawXML), &result); err != nil { // xml.Unmarshall parses xml data into my struct; &result is a pointer to the result
+	if err := xml.Unmarshal([]byte(rawXML), &result); err != nil { // xml.Unmarshall parses raw xml data into my struct; &result is a pointer to the result
 		err = fmt.Errorf("failed to parse the xml: %w", err)
 		c.Error(err)
 		return
