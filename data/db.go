@@ -12,7 +12,7 @@ var DB *sql.DB
 
 func init() {
 	var err error
-	if DB, err = sql.Open("sqlite3", "./data/dp-platform.db"); err != nil {
+	if DB, err = sql.Open("sqlite3", "./app.db"); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -1,5 +1,4 @@
 
-
 $(document).ready(function () {
     // register click event for the logout button
     $('#logout').on('click', function (e) {

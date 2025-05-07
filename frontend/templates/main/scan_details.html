@@ -10,14 +10,16 @@
     <script src='/static/assets/js/bootstrap.bundle.min.js'></script>
     <script src='/static/assets/js/jquery.min.js'></script>
     <script src='/static/assets/js/main.js'></script>
+    <script src="/static/assets/js/pie.js"></script>
     <script src='/static/assets/js/dashboard.js'></script>
+    <script src="/static/assets/js/formattimestamp.js"></script>
 </head>
 
 <body class="d-flex flex-column min-vh-100">
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
-            <a class="navbar-brand fs-3 fw-bold" href="#">Web-Based Network Scanner</a>
+            <a class="navbar-brand fs-3 fw-bold" href="/scans">Web-Based Network Scanner</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -26,8 +28,9 @@
                 <ul class="navbar-nav me-auto">
                 </ul>
                 <div class="d-flex">
-                    <img src="/static/assets/img/person-circle.svg" alt="User Icon" width="28" height="28" class="me-2">
-                    <span class="navbar-text me-3">{{ .userName }}</span>
+                    <img src="/static/assets/img/person-circle.svg" alt="User Icon" width="28" height="28"
+                        class="me-2 mt-1">
+                    <span class="navbar-text me-3 user-name">{{ .userName }}</span>
                     <a href="#" id="logout" class="btn btn-dark me-2">Logout</a>
                 </div>
             </div>
@@ -37,42 +40,125 @@
     <!-- Main Container with Sidebar -->
     <div class="d-flex flex-grow-1">
         <!-- Sidebar -->
-        <div class="bg-light p-3" style="width: 250px;">
+        <div class="p-3" style="width: 180px;" id="menu">
             <h4 class="mb-4">Menu</h4>
             <ul class="nav flex-column">
                 <li class="nav-item mb-2">
-                    <a class="nav-link" href="/scanner">Scanner</a>
-                </li>
-                <li class="nav-item mb-2">
-                    <a class="nav-link" href="/vpn">VPN</a>
+                    <a class="nav-link" href="/scans">Scans</a>
                 </li>
             </ul>
         </div>
 
         <!-- Main Content -->
-        <div class="p-4 flex-grow-1">
-            <h1>Scan</h1>
-            <table class="table">
-                <thead>
-                    <th scope="col">Host IP address</th>
-                    <th scope="col">Hostname</th>
-                    <th scope="col">Host MAC addres</th>
-                    <th scope="col">Vendor</th>
-                    <th scope="col">Open ports (Service)</th>
-                </thead>
-                <tbody>
-                    <!-- range over the result's hosts and create a row for each host -->
-                    {{ range $row := .rows }}
-                    <tr scope="row">
-                        <td>{{$row.IPv4}}</td>
-                        <td>{{$row.Hostname}}</td>
-                        <td>{{$row.MAC}}</td>
-                        <td><span class="text-muted">{{$row.Vendor}}</span></td>
-                        <td>{{$row.OpenPorts}}</td>
-                    </tr>
-                    {{end}}
-                </tbody>
-            </table>
+        <div class="p-4 flex-grow-1 h-auto bg-light">
+            <div class="container-fluid">
+                <div class="row h-25">
+                    <div class="col-4">
+                        <!-- Status numbers row -->
+                        <div class="row">
+                            <div class="col-7">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title nowrap fw-bold">Ports</h5>
+                                        <div id="chart-container"><canvas id="myChart"></canvas></div>
+                                        <input type="hidden" id="open-ports" value="{{.numOpenPorts}}">
+                                        <input type="hidden" id="closed-ports" value="{{.numClosedPorts}}">
+                                        <input type="hidden" id="filtered-ports" value="{{.numFilteredPorts}}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-5">
+                                <div class="row h-50 pb-3">
+                                    <div class="col-12 h-100">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h5 class="card-title nowrap fw-bold">Hosts Up</h5>
+                                                <p class="display-1 nowrap m-0">{{.hostsUp}}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row h-50 pt-2">
+                                    <div class="col-12 h-100">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h5 class="card-title nowrap fw-bold">Open Ports</h5>
+                                                <p class="display-1 nowrap m-0">{{.numOpenPorts}}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Identified Services -->
+                    <div class="col-8" id="identified-servises">
+                        <div class="card p-3">
+                            <h5 class="card-title nowrap fw-bold">Identified Services</h5>
+                            <div class="card-body" id="table-container">
+                                <table class="table" id="services">
+                                    <thead>
+                                        <th scope="col">Service</th>
+                                        <th scope="col">Count</th>
+                                        <th scope="col"></th>
+                                    </thead>
+                                    <tbody>
+                                        <!-- range over the result's hosts and create a row for each host -->
+                                        {{ range $service, $serviceDetails := .identifiedServices }}
+
+                                        <tr scope="row">
+                                            <td>{{$serviceDetails.Name}}</td>
+                                            <td>{{$serviceDetails.Count}}</td>
+                                            <td>
+                                                <div class="progress rounded-0">
+                                                    <div class="progress-bar rounded-0" role="progressbar"
+                                                        style="width: {{ $serviceDetails.Percentage }}%"
+                                                        aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {{end}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Scan details table -->
+                <div class="row h-75 pt-2">
+                    <div class="col-12 pt-3">
+                        <div class="card">
+                            <table class="table">
+                                <thead>
+                                    <th scope="col"></th>
+                                    <th scope="col">Host IP address</th>
+                                    <th scope="col">Host MAC addres</th>
+                                    <th scope="col">Vendor</th>
+                                    <th scope="col">Open ports (Service)</th>
+                                </thead>
+                                <tbody>
+                                    <!-- range over the result's hosts and create a row for each host -->
+                                    {{ range $row := .rows }}
+                                    <tr scope="row">
+                                        <td>{{$row.Index}}</td>
+                                        <td>
+                                            {{if .IsLocalHost}}
+                                            <span class="badge bg-secondary">{{$row.IPv4}} (localhost)</span>
+                                            {{else}}
+                                            <span class="badge bg-primary">{{$row.IPv4}}</span>
+                                            {{end}}
+                                        </td>
+                                        <td>{{$row.MAC}}</td>
+                                        <td><span class="text-muted">{{$row.Vendor}}</span></td>
+                                        <td>{{$row.OpenPorts}}</td>
+                                    </tr>
+                                    {{end}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -80,10 +166,6 @@
     <footer class="bg-light py-3 mt-auto">
         <div class="container d-flex justify-content-between">
             <span class="text-muted">© 2025 Karolina Łopusińska. All rights reserved.</span>
-            <div>
-                <a href="#" class="text-muted me-3">About</a>
-                <a href="#" class="text-muted">Contact</a>
-            </div>
         </div>
     </footer>
 </body>

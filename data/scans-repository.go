@@ -4,13 +4,12 @@ import (
 	"database/sql"
 )
 
-// Scan represents a record to be saved
-// type Scan struct {
-// 	ID        int
-// 	UserId    int
-// 	ResultXML string
-// 	CreatedAt time.Time
-// }
+// DeleteScan deletes a scan.
+func DeleteScan(db *sql.DB, ID string) error {
+	query := "DELETE FROM scans WHERE id = ?"
+	_, err := db.Exec(query, ID)
+	return err
+}
 
 func StoreNmapScan(db *sql.DB, userID int, resultXML string) error {
 	query := "INSERT INTO scans (user_id, result_xml) VALUES (?, ?)"
