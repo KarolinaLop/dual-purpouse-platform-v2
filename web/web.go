@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/KarolinaLop/dp/data"
 	"github.com/KarolinaLop/dp/frontend"
@@ -22,7 +23,8 @@ const (
 // SetupServer creates a server, and sets up routes, middleware and assets.
 func SetupServer() *http.Server {
 	log.Println("Server starting...")
-	gin.SetMode(gin.DebugMode)
+	ginMode := os.Getenv("GIN_MODE")
+	gin.SetMode(ginMode)
 	log.SetOutput(gin.DefaultWriter)
 	r := gin.New()
 
@@ -63,7 +65,7 @@ func SetupServer() *http.Server {
 	serveStaticAssets(r)
 
 	return &http.Server{
-		Addr:    "127.0.0.1:" + PORT,
+		Addr:    "0.0.0.0:" + PORT,
 		Handler: r,
 	}
 }
