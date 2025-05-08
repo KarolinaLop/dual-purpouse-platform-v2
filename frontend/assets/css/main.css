@@ -105,3 +105,20 @@ a#login, #new-scan {
 /* menu :  #bcc0cc*/
 /* main bg : #eff1f5*/
 /* text :  #5c5f77*/
+
+
+.badge-Pending {
+    background-color: #04a5e5;
+}
+
+.badge-Running {
+    background-color: #fe640b;
+}
+
+.badge-Failed {
+    background-color: #d20f39;
+}
+
+.badge-Done {
+    background-color: #40a02b;
+}

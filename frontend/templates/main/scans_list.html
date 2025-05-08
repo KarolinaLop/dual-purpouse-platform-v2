@@ -66,7 +66,7 @@
                     <tr>
                         <td>{{ $scan.ID }}</td>
                         <td class="timestamp">{{ $scan.Timestamp }}</td>
-                        <td>{{ $scan.Status }}</td>
+                        <td class="scan-status"><span class="badge badge-{{ $scan.Status }}">{{ $scan.Status }}</span></td>
                         <td>
                             {{ if eq $scan.Status "Done" }}
                             <a href="/scans/{{ $scan.ID }}/show" class="details-link">Show Details</a>
