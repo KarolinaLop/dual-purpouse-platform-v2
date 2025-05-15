@@ -87,14 +87,14 @@ func registerRoutes(r *gin.Engine) {
 	r.POST("/login", LoginUserHandler)
 }
 
-// ErrorHandlerMiddleware is our error handling Middleware.
+// ErrorHandlerMiddleware is an error handling Middleware.
 func ErrorHandlerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if gin.Mode() == gin.ReleaseMode {
 			// Recover from panic and log the error
 			defer func() {
 				if err := recover(); err != nil {
-					// Log the error (you can also log to a file or external service)
+					// Log the error
 					log.Printf("Error occurred: %v", err)
 					// Set the error on the context
 					c.Error(fmt.Errorf("%v", err))

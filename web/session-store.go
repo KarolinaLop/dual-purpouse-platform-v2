@@ -82,10 +82,10 @@ func (store SQLiteStore) New(r *http.Request, name string) (*sessions.Session, e
 func (store SQLiteStore) applySessionOptions(s *sessions.Session) {
 	s.Options = &sessions.Options{
 		Path:     store.options.Path,
-		Secure:   store.options.Secure,
+		Secure:   store.options.Secure, // Ensures secure cookie
 		MaxAge:   store.options.MaxAge,
-		HttpOnly: store.options.HttpOnly,
-		SameSite: store.options.SameSite,
+		HttpOnly: store.options.HttpOnly, // Ensures secure cookie
+		SameSite: store.options.SameSite, // Ensures secure cookie
 	}
 }
 

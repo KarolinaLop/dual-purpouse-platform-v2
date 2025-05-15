@@ -1,0 +1,37 @@
+# Network Scanner Web Application
+
+This project is a web-based network scanner that allows users to perform network scans using Nmap, view results, and manage scans through a user-friendly interface. It is built with Golang and uses SQLite for data storage.
+
+## Prerequisites
+
+To run this project, you need to have the following installed on your system:
+
+### 1. Golang
+- **Version**: Go 1.20 or higher
+- **Installation Command**:
+  ```bash
+  brew install go
+
+### 2. Nmap
+- **Version**: Nmap 7.93 or higer
+- **Installation Command**:
+  ```bash
+  brew install nmap
+
+### 3. SQLite
+- **Version**: SQLite 3.39 or higher
+- **Installation Command**:
+  ```bash
+  brew install sqlite
+
+### Setup Instructions
+1. Clone repository: https://github.com/KarolinaLop/dual-purpouse-platform-v2
+2. Install Go dependencies
+  ```bash
+  go mod tidy
+3. Setup enviromnet variables
+  ```bash
+  export GIN_MODE=debug 
+3. Run the application
+  ```bash
+  go run cmd/DP/main.go    

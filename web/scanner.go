@@ -20,7 +20,7 @@ import (
 
 // ShowScansListHandler renders the scans list page.
 func ShowScansListHandler(c *gin.Context) {
-	// call some data package func that loads all scans for the current user from the db
+	// call a func that loads all scans for the current user from the db
 	user, ok := c.Value("user").(models.User) // type assertion and interfaces
 	if !ok {
 		err := errors.New("failed to find the user in this context")
@@ -95,7 +95,7 @@ func StartScanHandler(c *gin.Context) {
 	}
 
 	// Set up the command
-	// nmap -Pn -T4 -sS -sV -sP -oX new-file.xml -F 192.168.1.0/24
+	//nmap -Pn -T4 -sS -sV -sP -oX new-file.xml -F 192.168.1.0/24
 	currentCmd := exec.Command(
 		"nmap",   // Run the Nmap scan
 		"-Pn",    // Host discovery, disables ping, treats all hosts as online
@@ -109,6 +109,7 @@ func StartScanHandler(c *gin.Context) {
 		target,
 	)
 
+	// Go routine that
 	go func() {
 		var err error
 		var PID int
@@ -237,7 +238,7 @@ func DeleteScanHandler(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-// ShowScanDetailsHandler displays scan by ID from the database, pasres the XML, and returns it as structured HTML data
+// ShowScanDetailsHandler displays scan by ID from the database, parses the XML, and returns it as structured HTML data
 func ShowScanDetailsHandler(c *gin.Context) {
 	scanID := c.Param("id")
 

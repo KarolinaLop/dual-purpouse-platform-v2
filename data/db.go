@@ -7,7 +7,7 @@ import (
 	_ "github.com/mattn/go-sqlite3" // Import the SQLite driver
 )
 
-// DB stores and retrieves our model data.
+// DB stores and retrieves model data.
 var DB *sql.DB
 
 func init() {
