@@ -78,6 +78,7 @@ func registerRoutes(r *gin.Engine) {
 	authenticatedRoutes.POST("/scans", StartScanHandler)
 	authenticatedRoutes.GET("/scans/:id/show", ShowScanDetailsHandler)
 	authenticatedRoutes.DELETE("/scans/:id", DeleteScanHandler)
+	authenticatedRoutes.GET("/scans/:id/status", CheckScanStatusHandler)
 
 	r.GET("/", HomeHandler)
 	r.GET("/register", ShowRegistrationFormHandler)
@@ -86,14 +87,14 @@ func registerRoutes(r *gin.Engine) {
 	r.POST("/login", LoginUserHandler)
 }
 
-// ErrorHandlerMiddleware is our error handling Middleware.
+// ErrorHandlerMiddleware is an error handling Middleware.
 func ErrorHandlerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if gin.Mode() == gin.ReleaseMode {
 			// Recover from panic and log the error
 			defer func() {
 				if err := recover(); err != nil {
-					// Log the error (you can also log to a file or external service)
+					// Log the error
 					log.Printf("Error occurred: %v", err)
 					// Set the error on the context
 					c.Error(fmt.Errorf("%v", err))

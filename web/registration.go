@@ -73,7 +73,7 @@ func RegisterUserHandler(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusSeeOther, "/dashboard")
+	c.Redirect(http.StatusSeeOther, "/scans")
 }
 
 // hashPassword hashes the password using bcrypt.

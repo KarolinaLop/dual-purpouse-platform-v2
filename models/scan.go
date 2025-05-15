@@ -128,3 +128,9 @@ type Service struct {
 	Conf      string `xml:"conf,attr,omitempty"`
 	ExtraInfo string `xml:"extrainfo,attr,omitempty"`
 }
+
+type Scan struct {
+	ID        int
+	Timestamp string
+	Status    string
+}

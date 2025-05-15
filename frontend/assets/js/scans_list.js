@@ -39,4 +39,22 @@ $(document).ready(function () {
             }
         });
     });
+
+    setInterval(function () {
+        let shouldRefresh = false;
+    
+        // Iterate over each .scan-status cell
+        $('.scan-status').each(function () {
+            const statusText = $(this).text().trim(); // Get the text content and trim whitespace
+            if (statusText === 'Pending' || statusText === 'Running') {
+                shouldRefresh = true; // Set flag to true if condition is met
+                return false; // Break out of the loop early
+            }
+        });
+    
+        // Refresh the page if any status is 'Pending' or 'Running'
+        if (shouldRefresh) {
+            location.reload();
+        }
+    }, 10000);
 });
