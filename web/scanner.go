@@ -109,7 +109,7 @@ func StartScanHandler(c *gin.Context) {
 		target,
 	)
 
-	// Go routine that
+	// Go routine that was meant to speed up the scan process
 	go func() {
 		var err error
 		var PID int
@@ -132,6 +132,7 @@ func StartScanHandler(c *gin.Context) {
 
 		PID = currentCmd.Process.Pid
 
+		// Update the scan status
 		err = data.UpdateScan(data.DB, scanID, "Running", currentCmd.Process.Pid, "")
 		if err != nil {
 			err = fmt.Errorf("failed to update scan: %w", err)
@@ -139,7 +140,7 @@ func StartScanHandler(c *gin.Context) {
 			return
 		}
 
-		// wait for the command to finish before reading the resulting XML file
+		// Wait for the command to finish before reading the resulting XML file
 		if err = currentCmd.Wait(); err != nil {
 			err = fmt.Errorf("failed to execute command: %w", err)
 			c.Error(err)
@@ -163,7 +164,7 @@ func StartScanHandler(c *gin.Context) {
 		}
 	}()
 
-	// redirect to the /scans page, so the table is refreshed
+	// Redirect to the /scans page, so the table is refreshed
 	c.Redirect(http.StatusSeeOther, "/scans")
 }
 
@@ -272,10 +273,10 @@ func ShowScanDetailsHandler(c *gin.Context) {
 		return
 	}
 
-	// extract IPv4 address from host
+	// Extract IPv4 address from host
 	rows := []hostRow{}
 
-	// iterate over the result's hosts and append a new hostRow to rows
+	// Iterate over the result's hosts and append a new hostRow to rows
 	for i, host := range result.Hosts {
 		newRow := hostRow{
 			Index:     i + 1,
@@ -291,7 +292,6 @@ func ShowScanDetailsHandler(c *gin.Context) {
 				}
 			case "mac":
 				newRow.MAC = hostAddress.Addr
-				//newRow.Vendor = hostAddress.Vendor
 				newRow.Vendor = models.CleanVendorName(hostAddress.Vendor)
 				if newRow.Vendor == "" {
 					newRow.Vendor = "N/A"
@@ -300,7 +300,7 @@ func ShowScanDetailsHandler(c *gin.Context) {
 
 		}
 
-		// append it to the rows slice
+		// Append it to the rows slice
 		rows = append(rows, newRow)
 	}
 
@@ -337,7 +337,7 @@ func identifiedServices(result models.ScanResult) []ServiceDetails {
 		}
 	}
 
-	// get the max count
+	// Get the max count
 	maxCount := 0
 	for _, details := range m {
 		maxCount = max(maxCount, details.Count)

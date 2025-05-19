@@ -123,7 +123,7 @@ func createUserSession(c *gin.Context, user models.User) error {
 }
 
 // LogoutUserHandler handles the logout action.
-// It clears the session and redirects to the login page.
+// Clears the session and redirects to the login page.
 func LogoutUserHandler(c *gin.Context) {
 
 	// Get the session

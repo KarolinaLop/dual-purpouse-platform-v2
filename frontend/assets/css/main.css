@@ -24,11 +24,6 @@
 
 
 /* Catppuccin Latte overrides for Bootstrap 5 */
-
-/* .bg-light {
-    background-color: #eff1f5;
-} */
-
 .card,
 --bs-card-bg,
 table.table tr td,
@@ -45,9 +40,6 @@ span.badge.bg-primary {
     color: #e2e6ec !important;
 }
 
-
-
-/* nav bar : #acb0be*/
 nav.navbar{
     background-color: #d7dce4 !important; 
 }
@@ -85,10 +77,6 @@ a#login, #new-scan {
     border-color: #fe640b;
 }
 
-/* a#register {
-    background-color: #6c6f85 !important;
-} */
-
 .user-name {
     color: #4c4f69 !important;
 }
@@ -100,12 +88,6 @@ a#login, #new-scan {
 .delete-scan {
     color: #d20f39;
 }
-
-
-/* menu :  #bcc0cc*/
-/* main bg : #eff1f5*/
-/* text :  #5c5f77*/
-
 
 .badge-Pending {
     background-color: #04a5e5;

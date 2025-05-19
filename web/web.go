@@ -28,7 +28,7 @@ func SetupServer() *http.Server {
 	log.SetOutput(gin.DefaultWriter)
 	r := gin.New()
 
-	// TODO: make this configurable by loading the keys from environment variables
+	// Future TODO: make this configurable by loading the keys from environment variables
 	encKeyHex := "99268541414541b9b9982c4b7a3de7c59b25b6f9dee0f9308c988732bc54e9f6"
 	encKey, err := hex.DecodeString(encKeyHex)
 	if err != nil {
@@ -42,7 +42,6 @@ func SetupServer() *http.Server {
 	// Set up session store
 	store := NewSQLiteStore(data.DB, authKey, encKey)
 	store.Options(sessions.Options{
-		// Secure:   true,
 		Path:     "/",
 		MaxAge:   3600, // 1 hour
 		HttpOnly: true,
